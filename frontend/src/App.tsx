@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Search, MapPin, Clock, Phone, Globe } from 'lucide-react'
+import { Search, MapPin, Clock, Phone, Globe, Layers, Filter, Navigation } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { SmartMap } from '@/components/SmartMap'
 import './App.css'
 
 interface Category {
@@ -37,6 +38,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showMap, setShowMap] = useState(false)
+  const [mapView, setMapView] = useState<'standard' | 'satellite' | 'terrain'>('standard')
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -191,16 +193,41 @@ function App() {
 
             {showMap && (
               <Card className="mb-8 border-amber-200">
-                <CardContent className="p-6">
-                  <div className="bg-amber-50 border-2 border-dashed border-amber-300 rounded-lg p-8 text-center">
-                    <MapPin className="w-12 h-12 text-amber-600 mx-auto mb-4" />
-                    <p className="text-amber-700 font-serif text-lg">
-                      Interactive map would be displayed here
-                    </p>
-                    <p className="text-amber-600 font-serif text-sm mt-2">
-                      Showing {results.count} locations in {results.town}
-                    </p>
+                <CardHeader className="bg-amber-100 border-b border-amber-200 pb-4">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-xl font-serif text-amber-900 flex items-center gap-2">
+                      <Navigation className="w-5 h-5" />
+                      Smart Map View
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setMapView('standard')}
+                        className={`font-serif text-xs ${mapView === 'standard' ? 'bg-amber-200 border-amber-400' : 'border-amber-300 text-amber-700'}`}
+                      >
+                        <Layers className="w-3 h-3 mr-1" />
+                        Standard
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-amber-300 text-amber-700 font-serif text-xs"
+                      >
+                        <Filter className="w-3 h-3 mr-1" />
+                        Filter
+                      </Button>
+                    </div>
                   </div>
+                  <CardDescription className="text-amber-700 font-serif">
+                    Showing {results.count} {categories.find(c => c.key === results.category)?.label.toLowerCase()} in {results.town}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <SmartMap 
+                    places={results.places} 
+                    category={results.category}
+                  />
                 </CardContent>
               </Card>
             )}
