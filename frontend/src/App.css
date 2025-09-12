@@ -40,3 +40,29 @@
 .read-the-docs {
   color: #888;
 }
+
+.leaflet-popup-content-wrapper {
+  background-color: #fef3c7 !important;
+  border: 2px solid #d97706 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-popup-tip {
+  background-color: #fef3c7 !important;
+  border: 2px solid #d97706 !important;
+}
+
+.vintage-marker {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.leaflet-container {
+  font-family: Georgia, serif !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #fef3c7 !important;
+  border: 1px solid #d97706 !important;
+  color: #92400e !important;
+}
