@@ -2,6 +2,12 @@
 
 > **Discover the hidden gems and essential services in any town** ✨
 
+
+![Project Screenshot](./towns.png)
+
+🔗 **Live Demo:** [explore-my-town.vercel.app](https://explore-my-town.vercel.app/)
+
+
 A beautiful, vintage-styled web application that helps you find cafés, restaurants, bars, and other amenities in any town around the world. Built with modern technologies and a classic design aesthetic.
 
 ![Explore My Town Demo](https://img.shields.io/badge/Status-Live-brightgreen) ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.1-009688) ![React](https://img.shields.io/badge/React-18.2.0-61DAFB) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-3178C6)
