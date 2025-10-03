@@ -320,64 +320,126 @@ function App() {
 
             {/* Pagination Controls */}
             {results.pagination.total_pages > 1 && (
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8 mb-6">
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={!results.pagination.has_prev || loading}
-                    variant="outline"
-                    size="sm"
-                    className="border-amber-300 text-amber-700 hover:bg-amber-50 font-serif"
-                  >
-                    Previous
-                  </Button>
-                  
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, results.pagination.total_pages) }, (_, i) => {
-                      let pageNum;
-                      if (results.pagination.total_pages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= results.pagination.total_pages - 2) {
-                        pageNum = results.pagination.total_pages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
-                      
-                      return (
-                        <Button
-                          key={pageNum}
-                          onClick={() => handlePageChange(pageNum)}
-                          disabled={loading}
-                          variant={currentPage === pageNum ? "default" : "outline"}
-                          size="sm"
-                          className={`font-serif text-xs sm:text-sm ${
-                            currentPage === pageNum 
-                              ? "bg-amber-700 hover:bg-amber-800 text-white" 
-                              : "border-amber-300 text-amber-700 hover:bg-amber-50"
-                          }`}
-                        >
-                          {pageNum}
-                        </Button>
-                      );
-                    })}
+              <div className="flex flex-col items-center gap-4 mt-8 mb-6 px-4 pagination-container">
+                {/* Mobile-first pagination */}
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md">
+                  {/* Previous/Next buttons - always visible */}
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={!results.pagination.has_prev || loading}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 sm:flex-none border-amber-300 text-amber-700 hover:bg-amber-50 font-serif text-sm pagination-button"
+                    >
+                      ← Previous
+                    </Button>
+                    
+                    <Button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={!results.pagination.has_next || loading}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 sm:flex-none border-amber-300 text-amber-700 hover:bg-amber-50 font-serif text-sm pagination-button"
+                    >
+                      Next →
+                    </Button>
                   </div>
                   
-                  <Button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={!results.pagination.has_next || loading}
-                    variant="outline"
-                    size="sm"
-                    className="border-amber-300 text-amber-700 hover:bg-amber-50 font-serif"
-                  >
-                    Next
-                  </Button>
+                  {/* Page info */}
+                  <div className="text-xs sm:text-sm text-amber-600 font-serif text-center">
+                    Page {currentPage} of {results.pagination.total_pages}
+                  </div>
                 </div>
                 
-                <div className="text-xs sm:text-sm text-amber-600 font-serif">
-                  Page {currentPage} of {results.pagination.total_pages}
+                {/* Page numbers - responsive based on screen size */}
+                <div className="flex items-center gap-1 flex-wrap justify-center max-w-full pagination-buttons">
+                  {/* Show first page if not in range */}
+                  {currentPage > 3 && results.pagination.total_pages > 5 && (
+                    <>
+                      <Button
+                        onClick={() => handlePageChange(1)}
+                        disabled={loading}
+                        variant="outline"
+                        size="sm"
+                        className="font-serif text-xs sm:text-sm border-amber-300 text-amber-700 hover:bg-amber-50 pagination-button"
+                      >
+                        1
+                      </Button>
+                      {currentPage > 4 && (
+                        <span className="text-amber-500 font-serif text-xs sm:text-sm px-1">...</span>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Page numbers */}
+                  {Array.from({ length: Math.min(results.pagination.total_pages <= 5 ? results.pagination.total_pages : 3, results.pagination.total_pages) }, (_, i) => {
+                    let pageNum;
+                    if (results.pagination.total_pages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 2) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= results.pagination.total_pages - 1) {
+                      pageNum = results.pagination.total_pages - 2 + i;
+                    } else {
+                      pageNum = currentPage - 1 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNum}
+                        onClick={() => handlePageChange(pageNum)}
+                        disabled={loading}
+                        variant={currentPage === pageNum ? "default" : "outline"}
+                        size="sm"
+                        className={`font-serif text-xs sm:text-sm min-w-[32px] sm:min-w-[36px] pagination-button ${
+                          currentPage === pageNum 
+                            ? "bg-amber-700 hover:bg-amber-800 text-white" 
+                            : "border-amber-300 text-amber-700 hover:bg-amber-50"
+                        }`}
+                      >
+                        {pageNum}
+                      </Button>
+                    );
+                  })}
+                  
+                  {/* Show last page if not in range */}
+                  {currentPage < results.pagination.total_pages - 2 && results.pagination.total_pages > 5 && (
+                    <>
+                      {currentPage < results.pagination.total_pages - 3 && (
+                        <span className="text-amber-500 font-serif text-xs sm:text-sm px-1">...</span>
+                      )}
+                      <Button
+                        onClick={() => handlePageChange(results.pagination.total_pages)}
+                        disabled={loading}
+                        variant="outline"
+                        size="sm"
+                        className="font-serif text-xs sm:text-sm border-amber-300 text-amber-700 hover:bg-amber-50 pagination-button"
+                      >
+                        {results.pagination.total_pages}
+                      </Button>
+                    </>
+                  )}
                 </div>
+                
+                {/* Quick jump for larger datasets */}
+                {results.pagination.total_pages > 10 && (
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-amber-600 font-serif">
+                    <span>Jump to:</span>
+                    <select
+                      value={currentPage}
+                      onChange={(e) => handlePageChange(Number(e.target.value))}
+                      disabled={loading}
+                      className="border border-amber-300 rounded px-2 py-1 text-amber-700 bg-white focus:border-amber-500 focus:outline-none pagination-select"
+                    >
+                      {Array.from({ length: results.pagination.total_pages }, (_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          Page {i + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
             )}
 
