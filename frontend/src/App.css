@@ -140,6 +140,15 @@
   .contact-info {
     word-break: break-all !important;
     overflow-wrap: anywhere !important;
+    max-width: 100% !important;
+  }
+  
+  .contact-info span {
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    hyphens: auto !important;
+    max-width: 100% !important;
+    display: block !important;
   }
   
   .place-name {
@@ -192,5 +201,19 @@
   #root {
     min-height: 100vh !important;
     min-height: calc(100vh - env(safe-area-inset-bottom, 0px)) !important;
+  }
+  
+  /* Specific handling for long URLs */
+  .contact-info span:contains("http") {
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+    font-size: 10px !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Ensure all text in place cards wraps properly */
+  .place-card * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
   }
 }

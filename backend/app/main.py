@@ -63,14 +63,30 @@ async def get_places(
     if category not in CATEGORY_TAGS:
         raise HTTPException(status_code=400, detail=f"Invalid category. Available: {list(CATEGORY_TAGS.keys())}")
     
+    # Enhanced town name validation
+    town_clean = town.strip()
+    if len(town_clean) < 3:
+        raise HTTPException(status_code=400, detail="Town name must be at least 3 characters long")
+    
+    # Check for repeated characters (like "Ppppp", "Aaaaa", etc.)
+    import re
+    if re.search(r'(.)\1{2,}', town_clean):
+        raise HTTPException(status_code=400, detail="Invalid town name: repeated characters not allowed")
+    
+    # Check for obviously invalid patterns
+    if re.match(r'^[A-Za-z]{1,2}$', town_clean.replace(' ', '')):
+        raise HTTPException(status_code=400, detail="Please enter a full town or city name")
+    
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             geo_response = await client.get(
                 "https://nominatim.openstreetmap.org/search",
                 params={
-                    "q": town,
+                    "q": town_clean,
                     "format": "json",
-                    "limit": 1
+                    "limit": 5,  # Get more results to validate
+                    "addressdetails": 1,
+                    "extratags": 1
                 },
                 headers={"User-Agent": "ExploreTownApp/1.0"}
             )
@@ -82,7 +98,35 @@ async def get_places(
             if not geo_data:
                 raise HTTPException(status_code=404, detail="Town not found")
             
-            lat, lon = geo_data[0]["lat"], geo_data[0]["lon"]
+            # Validate the geocoding results
+            best_match = None
+            for result in geo_data:
+                # Check if this looks like a real place
+                display_name = result.get("display_name", "").lower()
+                place_type = result.get("type", "").lower()
+                importance = result.get("importance", 0)
+                
+                # Look for city, town, village, municipality, etc.
+                if any(place_type in ["city", "town", "village", "municipality", "hamlet", "suburb"] for place_type in [place_type]):
+                    if importance > 0.1:  # Minimum importance threshold
+                        best_match = result
+                        break
+                elif "city" in display_name or "town" in display_name or "village" in display_name:
+                    if importance > 0.05:  # Lower threshold for named places
+                        best_match = result
+                        break
+            
+            if not best_match:
+                # If no good match found, check if any result has reasonable importance
+                for result in geo_data:
+                    if result.get("importance", 0) > 0.3:  # High importance threshold
+                        best_match = result
+                        break
+                
+                if not best_match:
+                    raise HTTPException(status_code=404, detail="No valid town found. Please check the spelling and try again.")
+            
+            lat, lon = best_match["lat"], best_match["lon"]
             
             tag = CATEGORY_TAGS[category]
             overpass_query = f"""
@@ -135,7 +179,8 @@ async def get_places(
             has_prev = page > 1
             
             return {
-                "town": town,
+                "town": town_clean,
+                "found_location": best_match.get("display_name", town_clean),
                 "category": category,
                 "places": paginated_places,
                 "count": len(paginated_places),

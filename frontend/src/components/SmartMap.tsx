@@ -78,8 +78,21 @@ export function SmartMap({ places, category }: SmartMapProps) {
   const getPlaceDetails = (place: Place): string[] => {
     const details: string[] = []
     if (place.tags.phone) details.push(`📞 ${place.tags.phone}`)
-    if (place.tags.website) details.push(`🌐 ${place.tags.website}`)
+    if (place.tags.website) {
+      const website = place.tags.website
+      const displayText = website.length > 40 ? website.substring(0, 37) + '...' : website
+      details.push(`🌐 ${displayText}`)
+    }
     if (place.tags.opening_hours) details.push(`🕒 ${place.tags.opening_hours}`)
+    
+    // Handle other contact URLs
+    Object.entries(place.tags).forEach(([key, value]) => {
+      if (key.startsWith('contact:') && typeof value === 'string' && value.startsWith('http')) {
+        const displayText = value.length > 40 ? value.substring(0, 37) + '...' : value
+        details.push(`🔗 ${key.replace('contact:', '')}: ${displayText}`)
+      }
+    })
+    
     return details
   }
   

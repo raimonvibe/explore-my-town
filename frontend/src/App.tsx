@@ -33,6 +33,7 @@ interface PaginationInfo {
 
 interface SearchResult {
   town: string
+  found_location?: string
   category: string
   places: Place[]
   count: number
@@ -76,7 +77,7 @@ function App() {
     e.preventDefault()
     if (!town.trim() || !category) return
 
-    // Basic validation for town name
+    // Enhanced validation for town name
     const trimmedTown = town.trim()
     if (trimmedTown.length < 2) {
       setError('Please enter a town name with at least 2 characters.')
@@ -85,6 +86,24 @@ function App() {
     
     if (/^[^a-zA-Z\s\u00C0-\u017F\u0100-\u017F\u0180-\u024F\u1E00-\u1EFF]/.test(trimmedTown)) {
       setError('Please enter a valid town name (letters and spaces only).')
+      return
+    }
+    
+    // Check for obviously invalid patterns
+    if (trimmedTown.length < 3) {
+      setError('Please enter a town name with at least 3 characters.')
+      return
+    }
+    
+    // Check for repeated characters (like "Ppppp", "Aaaaa", etc.)
+    if (/(.)\1{2,}/.test(trimmedTown)) {
+      setError('Please enter a valid town name. Repeated characters are not allowed.')
+      return
+    }
+    
+    // Check for patterns that look like gibberish
+    if (trimmedTown.length > 2 && /^[A-Za-z]{1,2}$/.test(trimmedTown.replace(/\s/g, ''))) {
+      setError('Please enter a full town or city name.')
       return
     }
 
@@ -179,8 +198,26 @@ function App() {
   const getPlaceDetails = (place: Place) => {
     const details = []
     if (place.tags.phone) details.push({ icon: Phone, text: place.tags.phone })
-    if (place.tags.website) details.push({ icon: Globe, text: place.tags.website })
+    if (place.tags.website) {
+      const website = place.tags.website
+      const displayText = website.length > 50 ? website.substring(0, 47) + '...' : website
+      details.push({ icon: Globe, text: displayText, fullText: website, isUrl: true })
+    }
     if (place.tags.opening_hours) details.push({ icon: Clock, text: place.tags.opening_hours })
+    
+    // Handle other contact URLs (TripAdvisor, Yelp, etc.)
+    Object.entries(place.tags).forEach(([key, value]) => {
+      if (key.startsWith('contact:') && typeof value === 'string' && value.startsWith('http')) {
+        const displayText = value.length > 50 ? value.substring(0, 47) + '...' : value
+        details.push({ 
+          icon: Globe, 
+          text: `${key.replace('contact:', '')}: ${displayText}`, 
+          fullText: value, 
+          isUrl: true 
+        })
+      }
+    })
+    
     return details
   }
 
@@ -278,6 +315,22 @@ function App() {
 
         {results && (
           <div className="max-w-6xl mx-auto">
+            {/* Location clarification warning */}
+            {results.found_location && results.found_location !== results.town && (
+              <Card className="max-w-2xl mx-auto mb-6 border-amber-200 bg-amber-50">
+                <CardContent className="p-4">
+                  <div className="text-center">
+                    <p className="text-amber-700 font-serif text-sm sm:text-base">
+                      <strong>Note:</strong> We found results for "<span className="font-bold">{results.found_location}</span>" 
+                      {results.town !== results.found_location && (
+                        <> instead of "{results.town}"</>
+                      )}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
               <div className="text-center sm:text-left">
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-serif text-amber-900">
@@ -354,7 +407,21 @@ function App() {
                       {getPlaceDetails(place).map((detail, index) => (
                         <div key={index} className="flex items-start gap-2 text-xs sm:text-sm text-amber-700 contact-info">
                           <detail.icon className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                          <span className="font-serif break-words overflow-wrap-anywhere">{detail.text}</span>
+                          {detail.isUrl ? (
+                            <a 
+                              href={detail.fullText} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="font-serif break-all overflow-wrap-anywhere word-break-break-all max-w-full text-blue-600 hover:text-blue-800 underline"
+                              title={detail.fullText}
+                            >
+                              {detail.text}
+                            </a>
+                          ) : (
+                            <span className="font-serif break-all overflow-wrap-anywhere word-break-break-all max-w-full">
+                              {detail.text}
+                            </span>
+                          )}
                         </div>
                       ))}
                       
