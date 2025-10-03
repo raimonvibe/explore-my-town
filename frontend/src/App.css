@@ -152,3 +152,45 @@
     overflow-wrap: break-word !important;
   }
 }
+
+/* Mobile safe area and navigation bar fixes */
+@supports (padding: max(0px)) {
+  .mobile-safe-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+  }
+  
+  .mobile-safe-top {
+    padding-top: max(1rem, env(safe-area-inset-top)) !important;
+  }
+}
+
+/* Fallback for devices without safe-area support */
+@media (max-width: 640px) {
+  .mobile-safe-bottom {
+    padding-bottom: 80px !important; /* Space for navigation bar */
+  }
+  
+  .pagination-container {
+    margin-bottom: 80px !important; /* Extra space for system UI */
+  }
+  
+  .main-container {
+    padding-bottom: 80px !important; /* Ensure content doesn't get hidden */
+  }
+  
+  /* Ensure page list dropdown is visible */
+  .pagination-select {
+    position: relative !important;
+    z-index: 1000 !important;
+  }
+  
+  /* Prevent content from being hidden behind system UI */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+  
+  #root {
+    min-height: 100vh !important;
+    min-height: calc(100vh - env(safe-area-inset-bottom, 0px)) !important;
+  }
+}

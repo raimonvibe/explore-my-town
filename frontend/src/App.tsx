@@ -76,6 +76,18 @@ function App() {
     e.preventDefault()
     if (!town.trim() || !category) return
 
+    // Basic validation for town name
+    const trimmedTown = town.trim()
+    if (trimmedTown.length < 2) {
+      setError('Please enter a town name with at least 2 characters.')
+      return
+    }
+    
+    if (/^[^a-zA-Z\s\u00C0-\u017F\u0100-\u017F\u0180-\u024F\u1E00-\u1EFF]/.test(trimmedTown)) {
+      setError('Please enter a valid town name (letters and spaces only).')
+      return
+    }
+
     setLoading(true)
     setError('')
     setResults(null)
@@ -94,7 +106,24 @@ function App() {
       const data = await response.json()
       setResults(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      let errorMessage = 'An error occurred'
+      
+      if (err instanceof Error) {
+        // Handle specific error cases with user-friendly messages
+        if (err.message.includes('404') && err.message.includes('Town not found')) {
+          errorMessage = `Sorry, we couldn't find "${town}". Please check the spelling and try again, or try a different town name.`
+        } else if (err.message.includes('timeout')) {
+          errorMessage = 'The search is taking longer than expected. Please try again.'
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.'
+        } else if (err.message.includes('Server error')) {
+          errorMessage = 'There was a problem with the search service. Please try again in a moment.'
+        } else {
+          errorMessage = err.message
+        }
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -120,7 +149,23 @@ function App() {
       setResults(data)
       setCurrentPage(page)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      let errorMessage = 'An error occurred'
+      
+      if (err instanceof Error) {
+        if (err.message.includes('404') && err.message.includes('Town not found')) {
+          errorMessage = `Sorry, we couldn't find "${town}". Please check the spelling and try again, or try a different town name.`
+        } else if (err.message.includes('timeout')) {
+          errorMessage = 'The search is taking longer than expected. Please try again.'
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.'
+        } else if (err.message.includes('Server error')) {
+          errorMessage = 'There was a problem with the search service. Please try again in a moment.'
+        } else {
+          errorMessage = err.message
+        }
+      }
+      
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -141,7 +186,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 main-container mobile-safe-bottom">
         <header className="text-center mb-8 sm:mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif text-amber-900 mb-2 sm:mb-4 tracking-wide">
             Explore My Town
@@ -175,6 +220,9 @@ function App() {
                   placeholder="Enter town name (e.g., Paris, London, New York)"
                   className="border-amber-300 focus:border-amber-500 focus:ring-amber-500"
                   required
+                  minLength={2}
+                  pattern="[a-zA-Z\s\u00C0-\u017F\u0100-\u017F\u0180-\u024F\u1E00-\u1EFF]+"
+                  title="Please enter a valid town name with letters and spaces only"
                 />
               </div>
               
@@ -209,8 +257,21 @@ function App() {
 
         {error && (
           <Card className="max-w-2xl mx-auto mb-6 sm:mb-8 border-red-200 bg-red-50">
-            <CardContent className="p-4">
-              <p className="text-red-700 font-serif text-center text-sm sm:text-base">{error}</p>
+            <CardContent className="p-4 sm:p-6">
+              <div className="text-center">
+                <p className="text-red-700 font-serif text-sm sm:text-base mb-3">{error}</p>
+                {error.includes("couldn't find") && (
+                  <div className="text-red-600 font-serif text-xs sm:text-sm">
+                    <p className="mb-2">💡 <strong>Tips:</strong></p>
+                    <ul className="text-left space-y-1 max-w-md mx-auto">
+                      <li>• Check the spelling of the town name</li>
+                      <li>• Try using the full city name (e.g., "New York City" instead of "NYC")</li>
+                      <li>• Use the country name for clarity (e.g., "Paris, France")</li>
+                      <li>• Try major cities like "London", "Paris", "Tokyo", "New York"</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}
@@ -320,7 +381,7 @@ function App() {
 
             {/* Pagination Controls */}
             {results.pagination.total_pages > 1 && (
-              <div className="flex flex-col items-center gap-4 mt-8 mb-6 px-4 pagination-container">
+              <div className="flex flex-col items-center gap-4 mt-8 mb-6 px-4 pagination-container mobile-safe-bottom">
                 {/* Mobile-first pagination */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md">
                   {/* Previous/Next buttons - always visible */}
@@ -424,13 +485,13 @@ function App() {
                 
                 {/* Quick jump for larger datasets */}
                 {results.pagination.total_pages > 10 && (
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-amber-600 font-serif">
-                    <span>Jump to:</span>
+                  <div className="flex flex-col sm:flex-row items-center gap-2 text-xs sm:text-sm text-amber-600 font-serif w-full max-w-sm">
+                    <span className="text-center sm:text-left">Jump to:</span>
                     <select
                       value={currentPage}
                       onChange={(e) => handlePageChange(Number(e.target.value))}
                       disabled={loading}
-                      className="border border-amber-300 rounded px-2 py-1 text-amber-700 bg-white focus:border-amber-500 focus:outline-none pagination-select"
+                      className="border border-amber-300 rounded px-3 py-2 text-amber-700 bg-white focus:border-amber-500 focus:outline-none pagination-select w-full sm:w-auto min-w-[120px]"
                     >
                       {Array.from({ length: results.pagination.total_pages }, (_, i) => (
                         <option key={i + 1} value={i + 1}>
