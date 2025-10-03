@@ -122,3 +122,33 @@
     gap: 4px !important;
   }
 }
+
+/* Mobile text overflow fixes */
+@media (max-width: 640px) {
+  .place-card {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    hyphens: auto !important;
+  }
+  
+  .place-card * {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  
+  .contact-info {
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  .place-name {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+  
+  .place-address {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+}

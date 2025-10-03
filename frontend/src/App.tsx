@@ -278,22 +278,22 @@ function App() {
 
             <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {results.places.map((place) => (
-                <Card key={place.id} className="border-amber-200 bg-white/90 shadow-md hover:shadow-lg transition-shadow">
+                <Card key={place.id} className="border-amber-200 bg-white/90 shadow-md hover:shadow-lg transition-shadow place-card">
                   <CardHeader className="pb-3 p-4 sm:p-6">
                     <CardTitle className="text-base sm:text-lg font-serif text-amber-900 flex items-start gap-2">
                       <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mt-1 flex-shrink-0" />
-                      <span className="line-clamp-2">{place.name}</span>
+                      <span className="line-clamp-2 break-words overflow-wrap-anywhere place-name">{place.name}</span>
                     </CardTitle>
-                    <CardDescription className="text-amber-700 font-serif text-sm sm:text-base">
+                    <CardDescription className="text-amber-700 font-serif text-sm sm:text-base break-words overflow-wrap-anywhere place-address">
                       {formatAddress(place)}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0 p-4 sm:p-6">
                     <div className="space-y-3">
                       {getPlaceDetails(place).map((detail, index) => (
-                        <div key={index} className="flex items-center gap-2 text-xs sm:text-sm text-amber-700">
-                          <detail.icon className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
-                          <span className="font-serif">{detail.text}</span>
+                        <div key={index} className="flex items-start gap-2 text-xs sm:text-sm text-amber-700 contact-info">
+                          <detail.icon className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                          <span className="font-serif break-words overflow-wrap-anywhere">{detail.text}</span>
                         </div>
                       ))}
                       

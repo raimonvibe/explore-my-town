@@ -106,16 +106,16 @@ export function SmartMap({ places, category }: SmartMapProps) {
           >
             <Popup className="vintage-popup">
               <div className="font-serif text-amber-900 max-w-xs">
-                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-2">{place.name}</h3>
-                <p className="text-xs sm:text-sm text-amber-700 mb-2">{formatAddress(place)}</p>
+                <h3 className="font-bold text-sm sm:text-base md:text-lg mb-2 break-words overflow-wrap-anywhere">{place.name}</h3>
+                <p className="text-xs sm:text-sm text-amber-700 mb-2 break-words overflow-wrap-anywhere">{formatAddress(place)}</p>
                 {getPlaceDetails(place).map((detail, index) => (
-                  <p key={index} className="text-xs text-amber-600 mb-1">{detail}</p>
+                  <p key={index} className="text-xs text-amber-600 mb-1 break-words overflow-wrap-anywhere">{detail}</p>
                 ))}
                 {Object.entries(place.tags)
                   .filter(([key]) => !['name', 'phone', 'website', 'opening_hours', 'addr:full', 'addr:street', 'addr:city', 'addr:housenumber'].includes(key))
                   .slice(0, 2)
                   .map(([key, value]) => (
-                    <span key={key} className="inline-block bg-amber-100 text-amber-800 text-xs px-1 sm:px-2 py-1 rounded mr-1 mb-1">
+                    <span key={key} className="inline-block bg-amber-100 text-amber-800 text-xs px-1 sm:px-2 py-1 rounded mr-1 mb-1 break-words overflow-wrap-anywhere">
                       {key}: {value}
                     </span>
                   ))}
